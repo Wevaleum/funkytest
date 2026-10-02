@@ -1,0 +1,16 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0 auto;
+  padding: 0 1rem;
+  // The catalogue table is wide; give it room rather than the 64rem the rest
+  // of the app would be happy with.
+  max-width: 90rem;
+  // Aura's own tokens, so light and dark mode follow the PrimeNG preset.
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.5;
+}

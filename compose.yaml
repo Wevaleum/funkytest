@@ -1,0 +1,27 @@
+services:
+  postgres:
+    build: ./docker/postgres
+    image: funkytest-postgres:18
+    container_name: funkytest-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-funkytest}
+      POSTGRES_USER: ${POSTGRES_USER:-funkytest}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-funkytest}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Postgres 18 declares VOLUME /var/lib/postgresql and puts PGDATA in
+      # /var/lib/postgresql/18/docker. Mounting /var/lib/postgresql/data (the
+      # pre-18 convention) would silently lose the data on container removal.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-funkytest} -d ${POSTGRES_DB:-funkytest}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

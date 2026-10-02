@@ -1,0 +1,102 @@
+@if (products.isLoading()) {
+  <div class="state">
+    <p-progress-spinner strokeWidth="4" ariaLabel="Loading the catalogue" />
+    <p>Loading the whole catalogue…</p>
+  </div>
+} @else if (products.error()) {
+  <p-message severity="error" text="Could not reach /api/products. Is the backend running on port 8080?" />
+  <p-button label="Retry" icon="pi pi-refresh" (onClick)="products.reload()" class="retry" />
+} @else {
+  <div class="summary">
+    <span class="count">{{ total() | number }} products</span>
+    <span class="muted">{{ variantTotal() | number }} variants · all rendered at once, no pagination</span>
+  </div>
+
+  <p-table
+    [value]="products.value()"
+    dataKey="id"
+    [rowHover]="true"
+    size="small"
+    styleClass="p-datatable-sm catalogue"
+  >
+    <ng-template #header>
+      <tr>
+        <th style="width: 3rem"></th>
+        <th>Product</th>
+        <th>Slug</th>
+        <th>Category</th>
+        <th class="numeric">Variants</th>
+        <th class="numeric">From</th>
+        <th>Status</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-product let-expanded="expanded">
+      <tr>
+        <td>
+          <p-button
+            type="button"
+            [pRowToggler]="product"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+            [attr.aria-label]="'Show variants of ' + product.name"
+          />
+        </td>
+        <td class="name">{{ product.name }}</td>
+        <td class="muted mono">{{ product.slug }}</td>
+        <td><p-tag [value]="product.categoryName" severity="info" [rounded]="true" /></td>
+        <td class="numeric">{{ product.variants.length }}</td>
+        <td class="numeric">
+          @if (lowestPrice(product); as price) {
+            {{ price | currency: 'EUR' }}
+          } @else {
+            <span class="muted">—</span>
+          }
+        </td>
+        <td>
+          <p-tag
+            [value]="product.active ? 'Active' : 'Inactive'"
+            [severity]="product.active ? 'success' : 'secondary'"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #expandedrow let-product>
+      <tr>
+        <td colspan="7" class="variants-cell">
+          <p-table [value]="product.variants" size="small" styleClass="p-datatable-sm variants">
+            <ng-template #header>
+              <tr>
+                <th>SKU</th>
+                <th>Variant</th>
+                <th class="numeric">Price</th>
+                <th class="numeric">Stock</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-variant>
+              <tr>
+                <td class="mono">{{ variant.sku }}</td>
+                <td>{{ variant.name }}</td>
+                <td class="numeric">{{ variant.price | currency: 'EUR' }}</td>
+                <td class="numeric">
+                  <p-tag [value]="variant.stockQuantity" [severity]="stockOf(variant)" />
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7">
+          <p-message severity="info" text="The catalogue is empty." />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+}

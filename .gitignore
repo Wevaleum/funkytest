@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# Build output
+backend/target/
+frontend/dist/
+frontend/.angular/
+frontend/node_modules/
+
+# Local env overrides
+.env
