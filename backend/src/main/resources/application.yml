@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: funkytest
+
+  # Matches the compose.yaml defaults; override per environment with the same
+  # env vars compose reads, or with SPRING_DATASOURCE_* .
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:funkytest}
+    username: ${POSTGRES_USER:funkytest}
+    password: ${POSTGRES_PASSWORD:funkytest}
+
+  # Flyway creates the schema if it is missing and keeps its history table
+  # inside it, so the database only ever needs to exist as an empty database.
+  flyway:
+    schemas: funkytest
+    default-schema: funkytest
+
+  jpa:
+    # Keep the session out of the view layer; repositories decide what is loaded.
+    open-in-view: false
+    # The schema is owned by Flyway (db/migration), never by Hibernate.
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: funkytest
+        # Fixture loading inserts tens of thousands of rows; batching turns that
+        # from one statement per row into one per batch. UUID keys are generated
+        # in the application, so nothing has to round-trip per insert.
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 500
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Expose health/info over HTTP; add more endpoints as needed.
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+app:
+  # Seeds the catalogue on startup when it is empty. Keep this off anywhere the
+  # data matters.
+  fixtures:
+    enabled: true
+    product-count: 10000
+    max-variants-per-product: 3
+
+  cors:
+    # Origins allowed to call /api/** from a browser (the Angular dev server).
+    allowed-origins:
+      - http://localhost:4200
